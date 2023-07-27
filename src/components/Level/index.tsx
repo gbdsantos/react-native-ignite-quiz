@@ -1,5 +1,7 @@
-import { Pressable, PressableProps, Text } from 'react-native';
+import { useEffect } from 'react';
+import { Pressable, PressableProps } from 'react-native';
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming
@@ -22,14 +24,30 @@ type Props = PressableProps & {
 
 export function Level({ title, type = 'EASY', isChecked = false, ...rest }: Props) {
   const scale = useSharedValue(1);
+  const checked = useSharedValue(1);
 
   const COLOR = TYPE_COLORS[type];
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ scale: scale.value }]
+      transform: [{ scale: scale.value }],
+      backgroundColor: interpolateColor(
+        checked.value,
+        [0, 1],
+        ['transparent', COLOR]
+      )
     }
   })
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    return {
+      color: interpolateColor(
+        checked.value,
+        [0, 1],
+        [COLOR, THEME.COLORS.GREY_100]
+      )
+    }
+  });
 
   function onPressIn() {
     scale.value = withTiming(1.1, { duration: 700 });
@@ -38,6 +56,10 @@ export function Level({ title, type = 'EASY', isChecked = false, ...rest }: Prop
   function onPressOut() {
     scale.value = withTiming(1);
   }
+
+  useEffect(() => {
+    checked.value = withTiming(isChecked ? 1 : 0);
+  }, [isChecked]);
 
   return (
     <Pressable
@@ -48,17 +70,17 @@ export function Level({ title, type = 'EASY', isChecked = false, ...rest }: Prop
       <Animated.View style={
         [
           animatedContainerStyle,
-          styles.container,
-          { borderColor: COLOR, backgroundColor: isChecked ? COLOR : 'transparent' }
+          { borderColor: COLOR },
+          styles.container
         ]
       }>
-        <Text style={
+        <Animated.Text style={
           [
+            animatedTextStyle,
             styles.title,
-            { color: isChecked ? THEME.COLORS.GREY_100 : COLOR }
           ]}>
           {title}
-        </Text>
+        </Animated.Text>
       </Animated.View>
     </Pressable>
   );
