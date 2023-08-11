@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   Alert,
@@ -31,6 +31,8 @@ export function History() {
 
   const { goBack } = useNavigation();
 
+  const swipeableRefs = useRef<Swipeable[]>([]);
+
   async function fetchHistory() {
     const response = await historyGetAll();
     setHistory(response);
@@ -43,7 +45,9 @@ export function History() {
     fetchHistory();
   }
 
-  function handleRemove(id: string) {
+  function handleRemove(id: string, index: number) {
+    swipeableRefs.current?.[index].close();
+
     Alert.alert(
       'Remover',
       'Deseja remover esse registro?',
@@ -79,7 +83,7 @@ export function History() {
         showsVerticalScrollIndicator={false}
       >
         {
-          history.map((item) => (
+          history.map((item, index) => (
             <Animated.View
               key={item.id}
               entering={SlideInRight}
@@ -90,9 +94,14 @@ export function History() {
               <Swipeable
                 containerStyle={styles.swipeableContainer}
                 overshootLeft={false}
+                ref={(ref) => {
+                  if (ref) {
+                    swipeableRefs.current.push(ref)
+                  }
+                }}
                 renderLeftActions={() => (
                   <Pressable
-                    onPress={() => handleRemove(item.id)}
+                    onPress={() => handleRemove(item.id, index)}
                     style={styles.swipeableRemove}
                   >
                     <Trash color={THEME.COLORS.GREY_100} size={32} />
