@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Animated, {
@@ -12,8 +12,6 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated';
 
-import { styles } from './styles';
-
 import { QUIZ } from '../../data/quiz';
 import { historyAdd } from '../../storage/quizHistoryStorage';
 
@@ -22,6 +20,10 @@ import { Question } from '../../components/Question';
 import { QuizHeader } from '../../components/QuizHeader';
 import { ConfirmButton } from '../../components/ConfirmButton';
 import { OutlineButton } from '../../components/OutlineButton';
+import { ProgressBar } from '../../components/ProgressBar';
+
+import { styles } from './styles';
+import { THEME } from '../../styles/theme';
 
 interface Params {
   id: string;
@@ -129,6 +131,16 @@ export function Quiz() {
     }
   });
 
+  const fixedProgressBarStyles = useAnimatedStyle(() => {
+    return {
+      backgroundColor: THEME.COLORS.GREY_500,
+      left: '-5%',
+      paddingTop: 50,
+      position: 'absolute',
+      width: '110%'
+    }
+  })
+
   useEffect(() => {
     const quizSelected = QUIZ.filter(item => item.id === id)[0];
     setQuiz(quizSelected);
@@ -147,6 +159,17 @@ export function Quiz() {
 
   return (
     <View style={styles.container}>
+      <Animated.View style={fixedProgressBarStyles}>
+        <Text style={styles.title}>
+          {quiz.title}
+        </Text>
+
+        <ProgressBar
+          current={currentQuestion + 1}
+          total={quiz.questions.length}
+        />
+      </Animated.View>
+
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.question}
