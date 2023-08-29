@@ -4,6 +4,7 @@ import { Alert, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Animated, {
   Easing,
+  Extrapolate,
   interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -135,11 +136,22 @@ export function Quiz() {
     return {
       backgroundColor: THEME.COLORS.GREY_500,
       left: '-5%',
+      opacity: interpolate(scrollY.value, [50, 90], [0, 1], Extrapolate.CLAMP),
       paddingTop: 50,
       position: 'absolute',
-      width: '110%'
+      transform: [
+        { translateY: interpolate(scrollY.value, [50, 100], [-40, 0], Extrapolate.CLAMP) }
+      ],
+      width: '110%',
+      zIndex: 1
     }
   })
+
+  const headerStyles = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [60, 90], [1, 0], Extrapolate.CLAMP)
+    }
+  });
 
   useEffect(() => {
     const quizSelected = QUIZ.filter(item => item.id === id)[0];
@@ -176,11 +188,13 @@ export function Quiz() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        <QuizHeader
-          title={quiz.title}
-          currentQuestion={currentQuestion + 1}
-          totalOfQuestions={quiz.questions.length}
-        />
+        <Animated.View style={[styles.header, headerStyles]}>
+          <QuizHeader
+            title={quiz.title}
+            currentQuestion={currentQuestion + 1}
+            totalOfQuestions={quiz.questions.length}
+          />
+        </Animated.View>
 
         <Animated.View style={shakeStyleAnimated}>
           <Question
